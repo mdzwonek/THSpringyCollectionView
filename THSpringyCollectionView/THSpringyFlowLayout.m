@@ -10,7 +10,7 @@
 
 @implementation THSpringyFlowLayout {
     UIDynamicAnimator *_animator;
-    NSMutableSet *_visibleIndexPaths;    
+    NSMutableSet *_visibleIndexPaths;
     CGPoint _lastContentOffset;
     CGFloat _lastScrollDelta;
     CGPoint _lastTouchLocation;
@@ -23,6 +23,7 @@
 -(void)setup{
     _animator = [[UIDynamicAnimator alloc] initWithCollectionViewLayout:self];
     _visibleIndexPaths = [NSMutableSet set];
+    _enabled = YES;
 }
 
 - (id)init {
@@ -42,21 +43,21 @@
 
 - (void)prepareLayout {
     [super prepareLayout];
-
+    
     CGPoint contentOffset = self.collectionView.contentOffset;
-
+    
     // only refresh the set of UIAttachmentBehaviours if we've moved more than the scroll threshold since last load
     if (fabsf(contentOffset.y - _lastContentOffset.y) < kScrollRefreshThreshold && _visibleIndexPaths.count > 0){
         return;
     }
     _lastContentOffset = contentOffset;
-
+    
     CGFloat padding = kScrollPaddingRect;
     CGRect currentRect = CGRectMake(0, contentOffset.y - padding, self.collectionView.frame.size.width, self.collectionView.frame.size.height + 3 * padding);
     
     NSArray *itemsInCurrentRect = [super layoutAttributesForElementsInRect:currentRect];
     NSSet *indexPathsInVisibleRect = [NSSet setWithArray:[itemsInCurrentRect valueForKey:@"indexPath"]];
-
+    
     // Remove behaviours that are no longer visible
     [_animator.behaviors enumerateObjectsUsingBlock:^(UIAttachmentBehavior *behaviour, NSUInteger idx, BOOL *stop) {
         NSIndexPath *indexPath = [[behaviour.items firstObject] indexPath];
@@ -67,25 +68,27 @@
             [_visibleIndexPaths removeObject:[[behaviour.items firstObject] indexPath]];
         }
     }];
-
+    
     // Find newly visible indexes
     NSArray *newVisibleItems = [itemsInCurrentRect filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(UICollectionViewLayoutAttributes *item, NSDictionary *bindings) {
-
+        
         BOOL isInVisibleIndexPaths = [_visibleIndexPaths member:item.indexPath] != nil;
         return !isInVisibleIndexPaths;
     }]];
-
+    
     [newVisibleItems enumerateObjectsUsingBlock:^(UICollectionViewLayoutAttributes *attribute, NSUInteger idx, BOOL *stop) {
         UIAttachmentBehavior *spring = [[UIAttachmentBehavior alloc] initWithItem:attribute attachedToAnchor:attribute.center];
-        spring.length = 0;
-        spring.frequency = 1.5;
-        spring.damping = 0.6;
-
+        spring.length = 1.0;
+        spring.frequency = 3.0;
+        spring.damping = 1.0;
+        
         // If our touchLocation is not (0,0), we need to adjust our item's center
         if (_lastScrollDelta != 0) {
             [self adjustSpring:spring centerForTouchPosition:_lastTouchLocation scrollDelta:_lastScrollDelta];
         }
-        [_animator addBehavior:spring];
+        if (self.enabled) {
+            [_animator addBehavior:spring];
+        }
         [_visibleIndexPaths addObject:attribute.indexPath];
     }];
 }
@@ -132,9 +135,9 @@
     item.center = center;
 }
 
-- (void)resetLayout{
+-(void)resetLayout{
     [_animator removeAllBehaviors];
     [_visibleIndexPaths removeAllObjects];
+    _lastScrollDelta = 0;
 }
-
 @end

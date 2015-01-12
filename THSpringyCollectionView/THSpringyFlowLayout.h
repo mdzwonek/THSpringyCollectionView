@@ -10,5 +10,7 @@
 
 @interface THSpringyFlowLayout : UICollectionViewFlowLayout
 
+@property (nonatomic) BOOL enabled;
+
 -(void)resetLayout;
 @end
