@@ -47,7 +47,7 @@
     CGPoint contentOffset = self.collectionView.contentOffset;
     
     // only refresh the set of UIAttachmentBehaviours if we've moved more than the scroll threshold since last load
-    if (fabsf(contentOffset.y - _lastContentOffset.y) < kScrollRefreshThreshold && _visibleIndexPaths.count > 0){
+    if (fabs(contentOffset.y - _lastContentOffset.y) < kScrollRefreshThreshold && _visibleIndexPaths.count > 0){
         return;
     }
     _lastContentOffset = contentOffset;
@@ -122,7 +122,7 @@
 }
 
 - (void)adjustSpring:(UIAttachmentBehavior *)spring centerForTouchPosition:(CGPoint)touchLocation scrollDelta:(CGFloat)scrollDelta {
-    CGFloat distanceFromTouch = fabsf(touchLocation.y - spring.anchorPoint.y);
+    CGFloat distanceFromTouch = fabs(touchLocation.y - spring.anchorPoint.y);
     CGFloat scrollResistance = distanceFromTouch * kScrollResistanceCoefficient;
     
     UICollectionViewLayoutAttributes *item = [spring.items firstObject];
