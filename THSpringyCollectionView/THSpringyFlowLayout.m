@@ -60,12 +60,12 @@
     
     // Remove behaviours that are no longer visible
     [_animator.behaviors enumerateObjectsUsingBlock:^(UIAttachmentBehavior *behaviour, NSUInteger idx, BOOL *stop) {
-        NSIndexPath *indexPath = [[behaviour.items firstObject] indexPath];
+        NSIndexPath *indexPath = [(UICollectionViewLayoutAttributes *)([behaviour.items firstObject]) indexPath];
         
         BOOL isInVisibleIndexPaths = [indexPathsInVisibleRect member:indexPath] != nil;
         if (!isInVisibleIndexPaths){
             [_animator removeBehavior:behaviour];
-            [_visibleIndexPaths removeObject:[[behaviour.items firstObject] indexPath]];
+            [_visibleIndexPaths removeObject:[(UICollectionViewLayoutAttributes *)([behaviour.items firstObject]) indexPath]];
         }
     }];
     
@@ -125,7 +125,7 @@
     CGFloat distanceFromTouch = fabs(touchLocation.y - spring.anchorPoint.y);
     CGFloat scrollResistance = distanceFromTouch * kScrollResistanceCoefficient;
     
-    UICollectionViewLayoutAttributes *item = [spring.items firstObject];
+    UICollectionViewLayoutAttributes *item = (UICollectionViewLayoutAttributes *)[spring.items firstObject];
     CGPoint center = item.center;
     if (_lastScrollDelta < 0) {
         center.y += MAX(_lastScrollDelta, _lastScrollDelta * scrollResistance);
